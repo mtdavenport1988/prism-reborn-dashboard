@@ -11,8 +11,38 @@
 <body>
 <div class="app">
 <header class="top"><div class="brand"><div class="logo">✦</div><div><h1>Prism Reborn</h1><p>Your money, in one clear view.</p></div></div><div class="top-actions"><div class="pill">● <b>Private on this device</b></div><button class="primary" onclick="openModal('bill')">＋ Add bill</button></div></header>
-<nav class="nav" id="topnav"><button class="active" data-tab="home" onclick="showTab('home')"><span>⌂</span>Overview</button><button data-tab="calendar" onclick="showTab('calendar')"><span>▦</span>Bill calendar</button><button data-tab="accounts" onclick="showTab('accounts')"><span>▣</span>Accounts</button><button data-tab="debts" onclick="showTab('debts')"><span>↘</span>Debt payoff</button><button data-tab="paydays" onclick="showTab('paydays')"><span>◷</span>Paydays</button><button data-tab="settings" onclick="showTab('settings')"><span>⚙</span>Settings</button></nav>
+<nav class="nav" id="topnav"><button class="active" data-tab="home" onclick="showTab('home')"><span>⌂</span>Overview</button><button data-tab="calendar" onclick="showTab('calendar')"><span>▦</span>Bill calendar</button><button data-tab="accounts" onclick="showTab('accounts')"><span>▣</span>Accounts</button><button data-tab="debts" onclick="showTab('debts')"><span>↘</span>Debt payoff</button><button data-tab="paydays" onclick="showTab('paydays')"><span>◷</span>Paydays</button><button data-tab="settings" onclick="showTab('settings')"><span>⚙</span>Settings</button>
+<button data-tab="documents" onclick="showTab('documents')">
+  <span>📄</span>Documents
+</button>
+</nav>
 <main>
+
+<section id="documents" class="section" style="display:none">
+  <div class="card">
+    <h2>📄 Financial Document Analyzer</h2>
+    <p>Upload a paycheck, utility bill, insurance statement, bank statement, or other financial document.</p>
+    <p style="color:var(--muted,#888);font-size:14px">
+      Your files will be processed in your browser. This first version does not send documents to an external service.
+    </p>
+
+    <label for="financialDocument">Choose a financial document</label>
+    <input
+      id="financialDocument"
+      type="file"
+      accept=".pdf,.png,.jpg,.jpeg,.webp,.txt,.csv"
+      style="display:block;width:100%;margin:12px 0"
+    />
+
+    <button type="button" onclick="analyzeFinancialDocument()">
+      Analyze Document
+    </button>
+
+    <div id="documentAnalysisStatus" style="margin-top:16px"></div>
+    <div id="documentAnalysisResult" style="margin-top:16px"></div>
+  </div>
+</section>
+  
 <section id="tab-home" class="tabview active"><div class="greeting"><div><h2 id="greeting">Your financial snapshot</h2><p id="todayline">A clearer picture starts here.</p></div><button class="secondary" onclick="showTab('calendar')">View calendar →</button></div>
 <div class="grid"><div class="card metric"><div class="label">▣ Cash accounts</div><div class="value" id="totalCash">$0.00</div><div class="hint" id="cashHint">Add checking and savings accounts</div></div><div class="card metric"><div class="label">▦ Bills this month</div><div class="value" id="monthBills">$0.00</div><div class="hint" id="monthBillHint">No bills scheduled yet</div></div><div class="card metric"><div class="label">◷ Due in 7 days</div><div class="value amber" id="dueSoon">$0.00</div><div class="hint" id="dueSoonHint">Nothing due soon</div></div><div class="card metric"><div class="label">↘ Tracked debt</div><div class="value" id="totalDebt">$0.00</div><div class="hint" id="debtHint">Add cards and loans</div></div>
 <div class="card wide"><div class="card-head"><h3>Coming up</h3><button class="text-btn" onclick="showTab('calendar')">Full calendar ↗</button></div><div id="upcomingList"></div></div>
@@ -27,7 +57,11 @@
 <section id="tab-settings" class="tabview"><div class="greeting"><div><h2>Settings & backup</h2><p>Keep your data under your control.</p></div></div><div class="grid"><div class="card half"><div class="card-head"><h3>Easy dashboard updates</h3><span class="tag">One-time setup</span></div><p class="settings-note">After you host the dashboard file on an HTTPS static site, paste its URL here. The app will load that dashboard on future launches and fall back to the bundled version if it cannot connect. Keep your dashboard host private to your own project.</p><div class="field"><label for="dashboardUrl">Hosted dashboard URL (HTTPS)</label><input id="dashboardUrl" type="url" placeholder="https://yourname.github.io/prism-reborn/"></div><div class="actions" style="flex-wrap:wrap"><button class="secondary" onclick="saveDashboardUrl(false)">Save URL</button><button class="primary" onclick="saveDashboardUrl(true)">Save & reload</button><button class="secondary" onclick="useBundledDashboard()">Use bundled version</button></div><p class="settings-note" id="dashboardUpdateStatus">No hosted dashboard configured. The bundled dashboard is active.</p></div><div class="card half"><div class="card-head"><h3>Payday & family tracking</h3></div><p class="settings-note">Use the Paydays tab to add as many paycheck schedules as you need and record OnePay repayments against specific check dates. Use Accounts to manage kids’ display-only balances, which appear in the calendar without any spending or transfer controls.</p><p class="settings-note">Your financial data is saved on this device. Back it up before uninstalling or clearing app storage. The updateable dashboard uses the same app data store so interface updates should not erase your records.</p></div><div class="card half"><div class="card-head"><h3>Data safety</h3></div><p class="settings-note">Your bills, balances, paydays, OnePay deductions and child balance trackers are stored on this device. Bank connections and phone-to-Cozyla data sync are not enabled yet. Export a backup before clearing app data or uninstalling.</p><div class="actions" style="justify-content:flex-start;flex-wrap:wrap"><button class="secondary" onclick="exportData()">Export backup</button><button class="secondary" onclick="requestImport()">Import backup</button><input id="importFile" type="file" accept="application/json,.json" style="display:none" onchange="importData(event)"><button class="secondary danger" onclick="clearData()">Clear all data</button></div></div><div class="card full"><div class="card-head"><h3>What this version can do</h3><span class="tag paid">Offline-first</span></div><div class="setting-row"><div><strong>Bill calendar & recurring reminders</strong><small>Schedule bills, mark them paid and see upcoming obligations.</small></div><span class="tag paid">Ready</span></div><div class="setting-row"><div><strong>Manual accounts and debt tracking</strong><small>Enter balances, credit limits, APRs and minimum payments.</small></div><span class="tag paid">Ready</span></div><div class="setting-row"><div><strong>Automatic bank and biller connections</strong><small>Requires a future secure online integration. Never enter bank passwords into this app.</small></div><span class="tag">Future phase</span></div><div class="setting-row"><div><strong>Phone-to-Cozyla synchronization</strong><small>Requires secure sync or a private hosted service. Local data does not sync automatically.</small></div><span class="tag">Future phase</span></div></div></div></section>
 </main><div class="privacy">Prism Reborn · Local-first finance dashboard · Updates available when hosted dashboard is configured</div>
 </div>
-<div class="bottomnav" id="bottomnav"><button class="active" data-tab="home" onclick="showTab('home')"><span>⌂</span>Home</button><button data-tab="calendar" onclick="showTab('calendar')"><span>▦</span>Calendar</button><button data-tab="accounts" onclick="showTab('accounts')"><span>▣</span>Accounts</button><button data-tab="debts" onclick="showTab('debts')"><span>↘</span>Debts</button><button data-tab="paydays" onclick="showTab('paydays')"><span>◷</span>Paydays</button><button data-tab="settings" onclick="showTab('settings')"><span>⚙</span>Settings</button></div>
+<div class="bottomnav" id="bottomnav"><button class="active" data-tab="home" onclick="showTab('home')"><span>⌂</span>Home</button><button data-tab="calendar" onclick="showTab('calendar')"><span>▦</span>Calendar</button><button data-tab="accounts" onclick="showTab('accounts')"><span>▣</span>Accounts</button><button data-tab="debts" onclick="showTab('debts')"><span>↘</span>Debts</button><button data-tab="paydays" onclick="showTab('paydays')"><span>◷</span>Paydays</button><button data-tab="settings" onclick="showTab('settings')"><span>⚙</span>Settings</button>
+<button data-tab="documents" onclick="showTab('documents')">
+  <span>📄</span>Documents
+</button>
+</div>
 <div class="modal-backdrop" id="modalBackdrop" onclick="if(event.target===this)closeModal()"><div class="modal"><h2 id="modalTitle">Add bill</h2><p class="sub" id="modalSub">A little organization goes a long way.</p><form id="entryForm" onsubmit="saveEntry(event)"><div id="modalFields"></div><div class="actions"><button type="button" class="secondary" onclick="closeModal()">Cancel</button><button class="primary" type="submit">Save</button></div></form></div></div><div class="toast" id="toast"></div>
 <script>
 const KEY='prismRebornDataV1';let data={bills:[],accounts:[],debts:[],paydays:[],onePayDeductions:[],kidAccounts:[],settings:{payAmount:'',payFrequency:'biweekly',nextPayday:''}};let currentMonth=new Date();currentMonth.setDate(1);let editing=null;
@@ -86,5 +120,213 @@ function useBundledDashboard(){if(window.AndroidBridge&&AndroidBridge.setDashboa
 function renderAll(){const now=new Date();$('todayline').textContent=now.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'})+' · Your finances at a glance';renderHome();if($('tab-calendar').classList.contains('active'))renderCalendar();if($('tab-accounts').classList.contains('active'))renderAccounts();if($('tab-debts').classList.contains('active'))renderDebts();if($('tab-paydays').classList.contains('active'))renderPaydays();renderKidsCalendar();renderKidAccounts()}
 clearData=function(){if(!confirm('This permanently deletes all bills, accounts, debts, payday schedules, OnePay deductions and child balances stored on this device. Export a backup first if you may need it. Continue?'))return;data={bills:[],accounts:[],debts:[],paydays:[],onePayDeductions:[],kidAccounts:[],settings:{payAmount:'',payFrequency:'biweekly',nextPayday:'',dashboardUrl:''}};persist();toast('Local data cleared')};
 window.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal()});load();
+
+async function analyzeFinancialDocument() {
+  const input = document.getElementById("financialDocument");
+  const status = document.getElementById("documentAnalysisStatus");
+  const result = document.getElementById("documentAnalysisResult");
+
+  if (!input.files || !input.files.length) {
+    status.textContent = "Please choose a document first.";
+    return;
+  }
+
+  const file = input.files[0];
+  const name = file.name.toLowerCase();
+
+  status.textContent = "Reading your document in this browser...";
+  result.replaceChildren();
+
+  try {
+    let text = "";
+
+    if (name.endsWith(".txt") || name.endsWith(".csv")) {
+      text = await file.text();
+    } else if (name.endsWith(".pdf")) {
+      await loadDocumentLibrary(
+        "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"
+      );
+
+      if (!window.pdfjsLib) {
+        throw new Error("The PDF reader could not be loaded.");
+      }
+
+      window.pdfjsLib.GlobalWorkerOptions.workerSrc =
+        "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+
+      const pdf = await window.pdfjsLib.getDocument({
+        data: await file.arrayBuffer()
+      }).promise;
+
+      for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber++) {
+        const page = await pdf.getPage(pageNumber);
+        const content = await page.getTextContent();
+        text += content.items.map(item => item.str).join(" ") + "\n";
+      }
+
+      if (!text.trim()) {
+        throw new Error(
+          "This PDF appears to be scanned. Image-based PDF OCR is not enabled yet."
+        );
+      }
+    } else if (/\.(png|jpe?g|webp)$/i.test(name)) {
+      await loadDocumentLibrary(
+        "https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"
+      );
+
+      if (!window.Tesseract) {
+        throw new Error("The image reader could not be loaded.");
+      }
+
+      const worker = await window.Tesseract.createWorker("eng");
+      try {
+        const recognition = await worker.recognize(file);
+        text = recognition.data.text;
+      } finally {
+        await worker.terminate();
+      }
+    } else {
+      throw new Error("This file type is not supported yet.");
+    }
+
+    if (!text.trim()) {
+      throw new Error("No readable text was found in this document.");
+    }
+
+    const lines = text.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
+    const moneyPattern = /(?:\$|USD\s*)-?\d[\d,]*(?:\.\d{2})?/gi;
+    const moneyValues = [...text.matchAll(moneyPattern)]
+      .map(match => Number(match[0].replace(/[^\d.-]/g, "")))
+      .filter(Number.isFinite);
+
+    const datePattern =
+      /\b(?:\d{1,2}[/-]\d{1,2}[/-]\d{2,4}|(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s+\d{1,2},?\s+\d{4})\b/gi;
+    const dates = [...new Set(text.match(datePattern) || [])];
+
+    const lower = text.toLowerCase();
+    let type = "General financial document";
+
+    if (/pay\s*stub|pay\s*statement|gross pay|net pay|earnings statement/i.test(text)) {
+      type = "Paycheck or pay statement";
+    } else if (/amount due|payment due|utility bill|billing statement/i.test(text)) {
+      type = "Bill or billing statement";
+    } else if (/insurance premium|policy number|coverage period/i.test(text)) {
+      type = "Insurance document";
+    } else if (/account balance|statement period|beginning balance/i.test(text)) {
+      type = "Bank or account statement";
+    }
+
+    const findAmount = pattern => {
+      const match = text.match(pattern);
+      if (!match) return null;
+      const amount = match[1].replace(/[$,\s]/g, "");
+      const value = Number(amount);
+      return Number.isFinite(value) ? value : null;
+    };
+
+    const amountPatterns = [
+      ["Net pay", /net\s*(?:pay|amount|earnings)[^\d$]{0,25}\$?\s*([\d,]+\.\d{2})/i],
+      ["Gross pay", /gross\s*(?:pay|amount|earnings)[^\d$]{0,25}\$?\s*([\d,]+\.\d{2})/i],
+      ["Amount due", /(?:amount due|total due|payment due|new balance)[^\d$]{0,25}\$?\s*([\d,]+\.\d{2})/i],
+      ["Total", /(?:total amount|invoice total|bill total|total charges)[^\d$]{0,25}\$?\s*([\d,]+\.\d{2})/i]
+    ];
+
+    const findings = amountPatterns
+      .map(([label, pattern]) => ({ label, value: findAmount(pattern) }))
+      .filter(item => item.value !== null);
+
+    const dueDateLine = lines.find(line => /due date|payment due/i.test(line));
+    const merchantLine = lines.find(line =>
+      /AEP Ohio|Columbia Gas|T-Mobile|GEICO/i.test(line)
+    );
+
+    const section = document.createElement("div");
+    const heading = document.createElement("h3");
+    heading.textContent = "Analysis results";
+    section.appendChild(heading);
+
+    const addLine = (label, value) => {
+      const p = document.createElement("p");
+      p.textContent = label + ": " + value;
+      section.appendChild(p);
+    };
+
+    addLine("File", file.name);
+    addLine("Document type estimate", type);
+
+    if (merchantLine) addLine("Possible provider", merchantLine);
+    if (dueDateLine) addLine("Possible due-date detail", dueDateLine);
+
+    if (findings.length) {
+      findings.forEach(item =>
+        addLine(item.label, item.value.toLocaleString("en-US", {
+          style: "currency",
+          currency: "USD"
+        }))
+      );
+    } else if (moneyValues.length) {
+      addLine(
+        "Amounts detected",
+        [...new Set(moneyValues)].slice(0, 12).map(value =>
+          value.toLocaleString("en-US", {
+            style: "currency",
+            currency: "USD"
+          })
+        ).join(", ")
+      );
+    } else {
+      addLine("Amounts", "No clear dollar amounts were detected.");
+    }
+
+    if (dates.length) addLine("Dates detected", dates.slice(0, 10).join(", "));
+
+    const preview = document.createElement("details");
+    const summary = document.createElement("summary");
+    summary.textContent = "View extracted text";
+    const pre = document.createElement("pre");
+    pre.style.whiteSpace = "pre-wrap";
+    pre.style.overflowWrap = "anywhere";
+    pre.textContent = text.slice(0, 12000);
+    preview.append(summary, pre);
+    section.appendChild(preview);
+
+    const note = document.createElement("p");
+    note.style.fontSize = "13px";
+    note.style.color = "var(--muted, #888)";
+    note.textContent =
+      "Check the original document before acting on these estimates. Nothing has been added to your bills or paycheck records.";
+    section.appendChild(note);
+
+    result.appendChild(section);
+    status.textContent = "Document read successfully.";
+  } catch (error) {
+    status.textContent = "Couldn't finish analysis: " + error.message;
+  }
+}
+
+function loadDocumentLibrary(url) {
+  return new Promise((resolve, reject) => {
+    const existing = [...document.scripts].find(script => script.src === url);
+
+    if (existing) {
+      if (url.includes("pdf.min.js") && window.pdfjsLib) return resolve();
+      if (url.includes("tesseract.min.js") && window.Tesseract) return resolve();
+      existing.addEventListener("load", resolve, { once: true });
+      existing.addEventListener("error", () =>
+        reject(new Error("A required document library failed to load.")),
+        { once: true }
+      );
+      return;
+    }
+
+    const script = document.createElement("script");
+    script.src = url;
+    script.onload = resolve;
+    script.onerror = () =>
+      reject(new Error("A required document library failed to load."));
+    document.head.appendChild(script);
+  });
+}
+  
 </script>
 </body></html>
