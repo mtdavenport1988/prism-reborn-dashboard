@@ -68,7 +68,27 @@ const KEY='prismRebornDataV1';let data={bills:[],accounts:[],debts:[],paydays:[]
 const $=id=>document.getElementById(id);const money=n=>new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(Number(n)||0);const dateObj=s=>{if(!s)return null;const d=new Date(s+'T12:00:00');return isNaN(d)?null:d};const dateStr=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;const pretty=s=>{const d=dateObj(s);return d?d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:d.getFullYear()!==new Date().getFullYear()?'numeric':undefined}):'No date'};const today=()=>dateStr(new Date());const escapeHtml=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function load(){try{const v=JSON.parse(localStorage.getItem(KEY)||'null');if(v&&typeof v==='object')data={...data,...v,settings:{...data.settings,...(v.settings||{})}}}catch(e){}; $('payAmount').value=data.settings.payAmount||'';$('payFrequency').value=data.settings.payFrequency||'biweekly';$('nextPayday').value=data.settings.nextPayday||'';renderAll()}
 function persist(){localStorage.setItem(KEY,JSON.stringify(data));renderAll()}
-function showTab(tab){document.querySelectorAll('.tabview').forEach(e=>e.classList.toggle('active',e.id==='tab-'+tab));document.querySelectorAll('[data-tab]').forEach(e=>e.classList.toggle('active',e.dataset.tab===tab));if(tab==='calendar')renderCalendar();if(tab==='accounts')renderAccounts();if(tab==='debts')renderDebts();if(tab==='paydays')renderPaydays();window.scrollTo(0,0)}
+
+function showTab(tab){
+  document.querySelectorAll('.tabview').forEach(e=>
+    e.classList.toggle('active',e.id==='tab-'+tab)
+  );
+  document.querySelectorAll('[data-tab]').forEach(e=>
+    e.classList.toggle('active',e.dataset.tab===tab)
+  );
+
+  const documents = document.getElementById('documents');
+  if(documents){
+    documents.style.display = tab==='documents' ? 'block' : 'none';
+  }
+
+  if(tab==='calendar')renderCalendar();
+  if(tab==='accounts')renderAccounts();
+  if(tab==='debts')renderDebts();
+  if(tab==='paydays')renderPaydays();
+
+  window.scrollTo(0,0);
+}
 function toast(msg){const t=$('toast');t.textContent=msg;t.classList.add('show');clearTimeout(window.toastTimer);window.toastTimer=setTimeout(()=>t.classList.remove('show'),2200)}
 function empty(title,desc,button,action){return `<div class="empty"><div class="emoji">✦</div><strong>${title}</strong><p>${desc}</p>${button?`<button class="secondary" onclick="${action}">${button}</button>`:''}</div>`}
 function statusFor(b){if(b.paid)return ['paid','Paid'];if(b.dueDate<today())return ['overdue','Overdue'];const days=Math.round((dateObj(b.dueDate)-dateObj(today()))/86400000);if(days<=7)return ['soon',days===0?'Due today':`Due in ${days}d`];return ['','Upcoming']}
