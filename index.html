@@ -18,7 +18,7 @@
 </nav>
 <main>
 
-<section id="documents" class="section" style="display:none">
+<section id="tab-documents" class="tabview">
   <div class="card">
     <h2>📄 Financial Document Analyzer</h2>
     <p>Upload a paycheck, utility bill, insurance statement, bank statement, or other financial document.</p>
@@ -68,19 +68,14 @@ const KEY='prismRebornDataV1';let data={bills:[],accounts:[],debts:[],paydays:[]
 const $=id=>document.getElementById(id);const money=n=>new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(Number(n)||0);const dateObj=s=>{if(!s)return null;const d=new Date(s+'T12:00:00');return isNaN(d)?null:d};const dateStr=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;const pretty=s=>{const d=dateObj(s);return d?d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:d.getFullYear()!==new Date().getFullYear()?'numeric':undefined}):'No date'};const today=()=>dateStr(new Date());const escapeHtml=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function load(){try{const v=JSON.parse(localStorage.getItem(KEY)||'null');if(v&&typeof v==='object')data={...data,...v,settings:{...data.settings,...(v.settings||{})}}}catch(e){}; $('payAmount').value=data.settings.payAmount||'';$('payFrequency').value=data.settings.payFrequency||'biweekly';$('nextPayday').value=data.settings.nextPayday||'';renderAll()}
 function persist(){localStorage.setItem(KEY,JSON.stringify(data));renderAll()}
-
 function showTab(tab){
   document.querySelectorAll('.tabview').forEach(e=>
     e.classList.toggle('active',e.id==='tab-'+tab)
   );
+
   document.querySelectorAll('[data-tab]').forEach(e=>
     e.classList.toggle('active',e.dataset.tab===tab)
   );
-
-  const documents = document.getElementById('documents');
-  if(documents){
-    documents.style.display = tab==='documents' ? 'block' : 'none';
-  }
 
   if(tab==='calendar')renderCalendar();
   if(tab==='accounts')renderAccounts();
